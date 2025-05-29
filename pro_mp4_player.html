@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Untitled</title>
+  
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>वीडियो प्लेयर</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background-color: #1a1a1a; /* Black background for ghost theme */
+            color: #ff0000; /* Red text */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        header {
+            background-color: #000;
+            color: #ff0000;
+            text-align: center;
+            padding: 1rem;
+            width: 100%;
+            border-bottom: 2px solid #ff0000;
+            text-shadow: 0 0 10px #ff0000;
+            margin-bottom: 1rem;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            letter-spacing: 1px;
+        }
+
+        .video-container {
+            max-width: 800px;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            border: 1px solid #ff0000;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        video {
+            width: 100%;
+            display: block;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 1rem;
+            gap: 0.5rem;
+            background-color: #000;
+            border-top: 1px solid #ff0000;
+        }
+
+        .controls button, .controls select {
+            background-color: #ff0000;
+            color: #000;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        .controls button:hover, .controls select:hover {
+            background-color: #cc0000;
+            box-shadow: 0 0 10px #ff0000;
+        }
+
+        .controls select {
+            appearance: none;
+            padding: 0.5rem;
+        }
+
+        .time-display {
+            color: #ff0000;
+            font-weight: bold;
+            align-self: center;
+            margin: 0 1rem;
+        }
+
+        .error-message {
+            color: #ff0000;
+            text-align: center;
+            margin-top: 1rem;
+            text-shadow: 0 0 8px rgba(255, 0, 0, 0.7);
+        }
+
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 1.5rem;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>शैक्षिक वीडियो प्लेयर</h1>
+    </header>
+
+    <div class="video-container">
+        <video id="videoPlayer" controls>
+            <source id="videoSource" src="" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <div class="controls">
+            <button id="playPauseBtn">Play/Pause</button>
+            <select id="speedControl">
+                <option value="0.5">0.5x</option>
+                <option value="1" selected>1x</option>
+                <option value="1.5">1.5x</option>
+                <option value="2">2x</option>
+                <option value="4">4x</option>
+            </select>
+            <span class="time-display" id="timeDisplay">0:00 / 0:00</span>
+            <button id="pipBtn">PiP</button>
+            <button id="fullscreenBtn">Full Screen</button>
+            <button id="loadUrlBtn">Load URL</button>
+        </div>
+    </div>
+    <div class="error-message" id="errorMessage"></div>
+
+    <script>
+        const videoPlayer = document.getElementById('videoPlayer');
+        const videoSource = document.getElementById('videoSource');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const speedControl = document.getElementById('speedControl');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const pipBtn = document.getElementById('pipBtn');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const loadUrlBtn = document.getElementById('loadUrlBtn');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // Get video URL from query parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const videoUrl = urlParams.get('video');
+
+        // Load video
+        if (videoUrl) {
+            try {
+                const decodedUrl = decodeURIComponent(videoUrl);
+                videoSource.src = decodedUrl;
+                videoPlayer.load();
+            } catch (e) {
+                errorMessage.textContent = 'त्रुटि: वीडियो URL अमान्य है।';
+            }
+        } else {
+            errorMessage.textContent = 'कोई वीडियो URL प्रदान नहीं किया गया।';
+        }
+
+        // Play/Pause functionality
+        playPauseBtn.addEventListener('click', () => {
+            if (videoPlayer.paused) {
+                videoPlayer.play();
+                playPauseBtn.textContent = 'Pause';
+            } else {
+                videoPlayer.pause();
+                playPauseBtn.textContent = 'Play';
+            }
+        });
+
+        // Update play/pause button on video play/pause
+        videoPlayer.addEventListener('play', () => {
+            playPauseBtn.textContent = 'Pause';
+        });
+        videoPlayer.addEventListener('pause', () => {
+            playPauseBtn.textContent = 'Play';
+        });
+
+        // Playback speed control
+        speedControl.addEventListener('change', () => {
+            videoPlayer.playbackRate = parseFloat(speedControl.value);
+        });
+
+        // Time display
+        videoPlayer.addEventListener('loadedmetadata', () => {
+            updateTimeDisplay();
+        });
+        videoPlayer.addEventListener('timeupdate', () => {
+            updateTimeDisplay();
+        });
+
+        function updateTimeDisplay() {
+            const currentTime = formatTime(videoPlayer.currentTime);
+            const duration = formatTime(videoPlayer.duration);
+            timeDisplay.textContent = `${currentTime} / ${duration}`;
+        }
+
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return '0:00';
+            const minutes = Math.floor(seconds / 60);
+            seconds = Math.floor(seconds % 60);
+            return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        }
+
+        // Picture-in-Picture
+        pipBtn.addEventListener('click', async () => {
+            try {
+                if (document.pictureInPictureElement) {
+                    await document.exitPictureInPicture();
+                } else {
+                    await videoPlayer.requestPictureInPicture();
+                }
+            } catch (err) {
+                errorMessage.textContent = 'PiP त्रुटि: ' + err.message;
+            }
+        });
+
+        // Full Screen
+        fullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                videoPlayer.requestFullscreen().catch(err => {
+                    errorMessage.textContent = 'फुल स्क्रीन त्रुटि: ' + err.message;
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        });
+
+        // Load URL manually (for testing)
+        loadUrlBtn.addEventListener('click', () => {
+            const url = prompt('वीडियो URL दर्ज करें:');
+            if (url) {
+                try {
+                    videoSource.src = url;
+                    videoPlayer.load();
+                    errorMessage.textContent = '';
+                } catch (e) {
+                    errorMessage.textContent = 'त्रुटि: अमान्य वीडियो URL।';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+<!-- partial -->
+  
+</body>
+</html>
